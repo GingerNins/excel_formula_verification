@@ -17,9 +17,6 @@ __CELL_MARGINS = {'top': "50", 'bottom': "10", 'start': "50", 'end': "50"}
 __AUTONUM = r'AUTONUM \s :'  # Document field code
 
 
-test_num = 1  # FIXME: probs don't need this anymore
-
-
 def add_table(doc: Document, formula: Formula):
     """
     Main function to add and setup a table for the verification document

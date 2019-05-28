@@ -4,6 +4,7 @@ from docx.oxml.ns import nsdecls, qn
 from docx.styles.style import _ParagraphStyle as ParagraphStyle
 from docx.table import _Cell as Cell
 from docx.text.run import Run
+from docx.text.paragraph import Paragraph
 
 
 def add_outline_level(self: ParagraphStyle, level: int):
@@ -26,7 +27,7 @@ ParagraphStyle.add_outline_level = add_outline_level
 def add_field(self: Run, field: str):
     """
     Adds a Word Field to the Paragraph Run by modifying the document's xml
-    This feature is not part of docx yet and thus a custom function is needed.
+    This feature is not part of python-docx yet and thus a custom function is needed.
     Method is added dynamically to the Run class.
     :param self: Location (run) in document to add Field
     :param field: Specific field-type to add
@@ -56,9 +57,33 @@ def add_field(self: Run, field: str):
 Run.add_field = add_field
 
 
+def add_bottom_border(self):
+    """
+    Adds a horizontal rule to the bottom of a paragraph.  python-docx doesn't support natively, therefore a
+    custom method is needed.  Method is added dynamically to the Paragraph class.
+    :param self: paragraph to add border to
+    :return: n/a
+    """
+    # TODO: update later so that val, sz, space and color can be customized
+    p = self._p.get_or_add_pPr()
+    pBdr = OxmlElement('w:pBdr')
+
+    bottom = OxmlElement('w:bottom')
+    bottom.set(qn('w:val'), 'single')
+    bottom.set(qn('w:sz'), '6')
+    bottom.set(qn('w:space'), '1')
+    bottom.set(qn('w:color'), 'orange')
+
+    pBdr.append(bottom)
+    p.append(pBdr)
+
+
+Paragraph.add_bottom_border = add_bottom_border
+
+
 def shade_cell(self: Cell, color: str):
     """
-    Shades the given cell with color.  openpyxl does not have this option natively.
+    Shades the given cell with color.  python-docx does not have this option natively.
     This method modifies the xml of the document.  Method is added dynamically to
     the Cell class.
     :param self: cell to add color to

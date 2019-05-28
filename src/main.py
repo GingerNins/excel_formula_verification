@@ -6,7 +6,6 @@ Module for creating Excel formula verification tests
 - Exports the tests to a word document
 """
 # TODO: Create UI for this
-# TODO: test git
 
 from datetime import datetime
 from docx import Document

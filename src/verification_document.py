@@ -1,7 +1,6 @@
 """
 
 """
-from datetime import datetime
 import docx
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
@@ -42,19 +41,6 @@ def create_document(template_data: dict, template_name: str, template_descriptio
     # TODO: Process the constants and names if necessary
 
     return doc
-
-
-def create_filename(directory: str, description: str) -> str:
-    """
-    Sets the name of the file based on the current timestamp and directory
-    :param directory: Directory where document will be stored
-    :param description: Description of the document
-    :return: name of the document as string
-    """
-    prefix = datetime.now().strftime('%Y%m%d') + '_ELS_'
-    suffix = '_' + datetime.now().strftime('%H%M%S')
-    extension = '.docx'
-    return directory + prefix + description + suffix + extension
 
 
 def __create_styles(tab_stops: tuple):

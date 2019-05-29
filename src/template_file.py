@@ -64,11 +64,14 @@ def _get_named_ranges(wb) -> list:
     for dn in wb.defined_names.definedName:
         name = dn.name
         scope = wb.sheetnames[dn.localSheetId] if dn.localSheetId is not None else 'Workbook'
-        dest = wb.defined_names[name].destinations
+        dest = wb.defined_names.get(name, dn.localSheetId).destinations
 
+        """
+        Destinations usually return 0 (global scope) or 1 (Workbook scope) item(s) unless there is a named
+        range that exists on multiple sheets with the same name having worksheet level scope
+        """
         for sheet_name, rng in dest:
             ws = wb[sheet_name]
-
             # If the range is only a single cell
             if not isinstance(ws[rng], tuple):
                 named_range_list.append(
@@ -109,6 +112,7 @@ def _get_formulas_and_constants(wb) -> tuple:
                 if cell.value is None or (isinstance(cell.value, str) and not cell.value.startswith('=')):
                     continue
 
+                # FIXME: remove the '=' thing
                 if isinstance(cell.value, str) and cell.value.startswith('='):
                     value = cell.value[1:]
                     formula_list.append(Formula(sheet=sheet_name, cell=cell, value=value))

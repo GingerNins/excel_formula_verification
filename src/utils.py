@@ -1,11 +1,13 @@
+from __init__ import add_method
 from datetime import datetime
 from docx.oxml import parse_xml, OxmlElement
 from docx.oxml.ns import nsdecls, qn
 from docx.styles.style import _ParagraphStyle as ParagraphStyle
 from docx.table import _Cell as Cell
 from docx.text.run import Run
-from __init__ import add_method
 from docx.text.paragraph import Paragraph
+import openpyxl
+import pandas as pd
 
 
 @add_method(ParagraphStyle)
@@ -89,9 +91,6 @@ def shade_cell(self: Cell, color: str):
     self._tc.get_or_add_tcPr().append(cell_color)
 
 
-
-
-
 def create_filename(directory: str, description: str, initials: str = 'ELS', extension: str = 'docx') -> str:
     """
     Sets the name of the file based on the current timestamp and directory
@@ -106,4 +105,26 @@ def create_filename(directory: str, description: str, initials: str = 'ELS', ext
     now = datetime.now().strftime
     return f"{directory}{now('%Y%m%d')}_{initials}_{description}_{now('%H%M%S')}.{extension}"
 
+
+def output_formulas_to_excel(filename, sheet_name, items):
+    """
+    Writes out all items to a sheet in the given excel file
+    :param filename: Excel file to write items to
+    :param sheet_name: name of sheet
+    :param items: list of items to write to the sheet
+    :return: n/a
+    """
+    try:
+        book = openpyxl.load_workbook(filename)
+    except FileNotFoundError:
+        book = openpyxl.Workbook()
+        sheet = book.get_sheet_by_name('Sheet')
+        book.remove_sheet(sheet)
+
+    writer = pd.ExcelWriter(filename, engine='openpyxl')
+    writer.book = book
+
+    df = pd.DataFrame([i.__dict__ for i in items])
+    df.to_excel(writer, sheet_name=sheet_name)
+    writer.save()
 

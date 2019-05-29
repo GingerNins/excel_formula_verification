@@ -1,18 +1,15 @@
 import openpyxl
 from openpyxl import Workbook, utils
-import pandas as pd
 from variable import Formula, Name, Variable
 
 
-def process_template_file(filename: str, output_file: str = None) -> dict:
+def process_template_file(filename: str) -> dict:
     """
     Processes the Excel file aggregating all formulas, named ranges, constants
     matching them together, storing the list of formulas and list of names in a dict
     :param filename: name of template file
-    :param output_file: an excel file of all formulas and named ranges (optional)
     :return: dict of formula list and named ranges list
     """
-    # Parses out formulas and names
     try:
         wb: Workbook = openpyxl.load_workbook(filename)
     except PermissionError as e:
@@ -22,13 +19,31 @@ def process_template_file(filename: str, output_file: str = None) -> dict:
     named_ranges: list = _get_named_ranges(wb)
     formulas, constants = _get_formulas_and_constants(wb)
 
-    # Parses out the actual values instead of the formulas
-    # and pairs them with the original formula/named range record
+    variables = {'formulas': formulas, 'names': named_ranges, 'constants': constants}
+
+    _match_output_data(filename, variables)
+
+    wb.close()
+
+    return variables
+
+
+def _match_output_data(filename, items):
+    """
+    Matches the items to the the data values in the Excel file
+    :param filename: filename to open as data_only
+    :param items: items to match
+    :return: n/a
+    """
     try:
         wb_data: Workbook = openpyxl.load_workbook(filename, data_only=True)
     except PermissionError as e:
         print(e)
         exit(1)
+
+    constants = items['constants']
+    formulas = items['formulas']
+    named_ranges = items['names']
 
     for c in constants:
         c.set_name(named_ranges)
@@ -43,15 +58,7 @@ def process_template_file(filename: str, output_file: str = None) -> dict:
         n.set_is_used(formulas)
         n.set_output(wb_data)
 
-    wb.close()
     wb_data.close()
-
-    if output_file:
-        for name, items in zip(['named_ranges', 'formulas', 'constants'],
-                               [named_ranges, formulas, constants]):
-            output_formulas_to_excel(output_file, name, items)
-
-    return {'formulas': formulas, 'names': named_ranges, 'constants': constants}
 
 
 def _get_named_ranges(wb) -> list:
@@ -93,8 +100,11 @@ def _get_named_ranges(wb) -> list:
 
 def _get_formulas_and_constants(wb) -> tuple:
     """
-    Aggregates all formulas and variables in the workbook in a list
-    :return: a list of Formulas and Variables
+    Aggregates all formulas and constants in the workbook in a list.
+    Constants are cells that contain values necessary for calculations but are
+    not formulas themselves.  These are usually manually entered nuumbers by
+    the users.
+    :return: a tuple of a list of Formulas and list of Constants
     """
     formula_list = []
     constants_list = []
@@ -112,7 +122,11 @@ def _get_formulas_and_constants(wb) -> tuple:
                 if cell.value is None or (isinstance(cell.value, str) and not cell.value.startswith('=')):
                     continue
 
-                # FIXME: remove the '=' thing
+                # FIXME: remove the '=' thing?
+                # Note: If i don't check, then I won't know if Variable or Formula
+                # Note: Should I perform the check here? or change the variable class
+                #   - so that all formulas/variables/names? are the same object
+                #   - with different flag types?
                 if isinstance(cell.value, str) and cell.value.startswith('='):
                     value = cell.value[1:]
                     formula_list.append(Formula(sheet=sheet_name, cell=cell, value=value))
@@ -123,17 +137,4 @@ def _get_formulas_and_constants(wb) -> tuple:
     return formula_list, constants_list
 
 
-def output_formulas_to_excel(outfile, name, items):
-    try:
-        book = openpyxl.load_workbook(outfile)
-    except FileNotFoundError:
-        book = openpyxl.Workbook()
-        sheet = book.get_sheet_by_name('Sheet')
-        book.remove_sheet(sheet)
 
-    writer = pd.ExcelWriter(outfile, engine='openpyxl')
-    writer.book = book
-
-    df = pd.DataFrame([i.__dict__ for i in items])
-    df.to_excel(writer, sheet_name=name)
-    writer.save()

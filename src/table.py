@@ -16,6 +16,7 @@ __FILL_COLOR = 'd0cece'
 __CELL_MARGINS = {'top': "50", 'bottom': "10", 'start': "50", 'end': "50"}
 __AUTONUM = r'AUTONUM \s :'  # Document field code
 
+# TODO: Keep with next, and non-breaking across rows
 
 def add_table(doc: Document, formula: Formula):
     """
@@ -217,8 +218,15 @@ def __create_variable_rows(table: Table, formula: Formula, total_rows: int):
         cell.paragraphs[0].style = 'Cell Text'
 
     # TODO: Add formula variable itself (Last Row)
+    cell = table.cell(total_rows - 1, 2)
+    cell.text = formula.coordinate
+    cell.paragraphs[0].style = 'Cell Text'
 
-    # TODO: Make separate function for this
+    cell = table.cell(total_rows - 1, 3)
+    cell.text = formula.name
+    cell.paragraphs[0].style = 'Cell Text'
+
+    # TODO: Make separate function for this?
     # Sub header rows
     headers = ['Manual', 'Excel', 'Pass']
     for i in range(4, 6+1):

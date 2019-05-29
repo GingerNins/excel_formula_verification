@@ -7,10 +7,7 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_TAB_ALIGNMENT
 from docx.enum.style import WD_STYLE_TYPE
 from table import add_table
-from docx.oxml import parse_xml
 from utils import add_field, add_outline_level, add_bottom_border
-
-# TODO: Insert a table of contents
 
 # Document Field Codes
 __PAGE: str = r'PAGE \* Arabic \* MERGEFORMAT'
@@ -36,10 +33,12 @@ def create_document(template_data: dict, template_name: str, template_descriptio
     __create_styles(tab_stops)
     __document_setup(template_name, template_description, margins)
 
+    # TODO: move this to another function
     p = doc.add_paragraph('Table of Contents')
     p.add_bottom_border()
     doc.add_paragraph().add_run().add_field(r'TOC \o "1-3" \h \z \u')
 
+    # TODO: move this to another function
     for f in template_data['formulas']:
         add_table(doc, f)
 

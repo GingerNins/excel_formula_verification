@@ -11,6 +11,7 @@ def parse_value(value: str) -> str:
         return value
 
 
+# TODO: change these to classes instead of data classes?
 @dataclass
 class Variable(object):
     name: str = None                    # Defined name or coordinate

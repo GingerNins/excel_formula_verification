@@ -4,9 +4,11 @@ from docx.oxml.ns import nsdecls, qn
 from docx.styles.style import _ParagraphStyle as ParagraphStyle
 from docx.table import _Cell as Cell
 from docx.text.run import Run
+from __init__ import add_method
 from docx.text.paragraph import Paragraph
 
 
+@add_method(ParagraphStyle)
 def add_outline_level(self: ParagraphStyle, level: int):
     """
     Adds a method to the _ParagraphFormat class that adds the outline level attribute to the document's xml.
@@ -20,10 +22,7 @@ def add_outline_level(self: ParagraphStyle, level: int):
     self._element.get_or_add_pPr().append(outline_level)
 
 
-# Note: Is this the appropriate place to put this?
-ParagraphStyle.add_outline_level = add_outline_level
-
-
+@add_method(Run)
 def add_field(self: Run, field: str):
     """
     Adds a Word Field to the Paragraph Run by modifying the document's xml
@@ -54,10 +53,8 @@ def add_field(self: Run, field: str):
     r_element.append(fld_char_end)
 
 
-Run.add_field = add_field
-
-
-def add_bottom_border(self):
+@add_method(Paragraph)
+def add_bottom_border(self: Paragraph):
     """
     Adds a horizontal rule to the bottom of a paragraph.  python-docx doesn't support natively, therefore a
     custom method is needed.  Method is added dynamically to the Paragraph class.
@@ -78,9 +75,7 @@ def add_bottom_border(self):
     p.append(pBdr)
 
 
-Paragraph.add_bottom_border = add_bottom_border
-
-
+@add_method(Cell)
 def shade_cell(self: Cell, color: str):
     """
     Shades the given cell with color.  python-docx does not have this option natively.
@@ -94,7 +89,7 @@ def shade_cell(self: Cell, color: str):
     self._tc.get_or_add_tcPr().append(cell_color)
 
 
-Cell.shade_cell = shade_cell
+
 
 
 def create_filename(directory: str, description: str, initials: str = 'ELS', extension: str = 'docx') -> str:
